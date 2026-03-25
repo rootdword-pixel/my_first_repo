@@ -1,0 +1,15 @@
+# Python junk
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+
+# Windows junk
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Personal AI data (if you ever save logs)
+*.log
