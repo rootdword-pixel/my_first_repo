@@ -1,0 +1,1201 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Lexicon Dashboard</title>
+    <style>
+        :root {
+            --parchment: #f4f1ea;
+            --ink: #2c3e50;
+            --gold: #8e735b;
+            --white: #ffffff;
+            --soft: #efe7da;
+            --line: #ddd2c5;
+            --page-bg: var(--parchment);
+            --page-text: var(--ink);
+            --panel-bg: var(--white);
+            --panel-soft: var(--soft);
+            --panel-line: var(--line);
+            --muted-text: #444;
+            --header-subtle: #dbe6f5;
+            --tool-surface: #f8fafc;
+        }
+
+        :root.dark {
+            --page-bg: #111827;
+            --page-text: #e5eef8;
+            --panel-bg: #1f2937;
+            --panel-soft: #243244;
+            --panel-line: #475569;
+            --muted-text: #d4deea;
+            --header-subtle: #c8d6ea;
+            --tool-surface: #273548;
+            --white: #1f2937;
+            --soft: #243244;
+            --line: #475569;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", serif;
+            background: var(--page-bg);
+            color: var(--page-text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        header {
+            background: var(--ink);
+            color: white;
+            padding: 1.5rem 1rem;
+            border-bottom: 4px solid var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            letter-spacing: 0.02em;
+        }
+
+        header p {
+            margin: 0.75rem 0 0;
+            color: var(--header-subtle);
+        }
+
+        .header-left {
+            text-align: left;
+        }
+
+        .theme-toggle {
+            padding: 8px 12px;
+            font-size: 1.1em;
+            background: #374151;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            flex: 0 0 auto;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 6px;
+            padding: 10px;
+            background: var(--panel-bg);
+            border-bottom: 2px solid var(--gold);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid var(--panel-line);
+            background: var(--panel-bg);
+            color: var(--page-text);
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .tab-btn.active {
+            border-color: var(--gold);
+            box-shadow: inset 0 0 0 1px rgba(142, 115, 91, 0.25);
+            background: rgba(142, 115, 91, 0.12);
+            color: var(--gold);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 16px 0;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .breakdown-panel {
+            width: min(900px, calc(100% - 30px));
+            margin: 16px auto 0;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-line);
+            border-radius: 12px;
+            padding: 16px;
+            display: none;
+        }
+
+        .breakdown-panel table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .breakdown-panel thead th {
+            background: var(--gold);
+            color: white;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .breakdown-panel tbody td {
+            padding: 8px;
+            border-bottom: 1px solid var(--panel-line);
+        }
+
+        .calculator-zone {
+            background: var(--panel-bg);
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            flex-wrap: wrap;
+            transition: background-color 0.3s ease;
+        }
+
+        .script-select {
+            padding: 10px 12px;
+            border: 2px solid var(--gold);
+            border-radius: 5px;
+            background: var(--panel-bg);
+            color: var(--page-text);
+            font-size: 1rem;
+        }
+
+        #gematriaInput {
+            padding: 10px;
+            border: 2px solid var(--gold);
+            border-radius: 5px;
+            font-size: 1.2rem;
+            width: 320px;
+            max-width: 100%;
+            text-align: center;
+            background: var(--panel-bg);
+            color: var(--page-text);
+        }
+
+        .result-pill,
+        .save-button {
+            background: var(--ink);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1rem;
+            border: none;
+        }
+
+        .result-pill {
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .save-button {
+            cursor: pointer;
+        }
+
+        .save-button:hover {
+            background: #1e2e3b;
+        }
+
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .connections-panel {
+            width: min(900px, calc(100% - 30px));
+            margin: 16px auto 0;
+            background: var(--panel-soft);
+            border: 1px solid var(--panel-line);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .connections-panel h3 {
+            margin: 0 0 10px;
+        }
+
+        .connections-list {
+            margin: 0;
+            padding-left: 20px;
+            color: var(--muted-text);
+            line-height: 1.6;
+        }
+
+        .connections-empty {
+            margin: 0;
+            color: var(--muted-text);
+            font-style: italic;
+        }
+
+        @media (max-width: 900px) {
+            .main-container {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+
+            .alphabet-list {
+                width: 100% !important;
+                height: 280px;
+                border-right: none !important;
+                border-bottom: 2px solid var(--gold);
+            }
+
+            .calculator-zone {
+                flex-direction: column;
+            }
+
+            #gematriaInput {
+                width: 90%;
+            }
+        }
+
+        .alphabet-list {
+            width: 370px;
+            overflow-y: auto;
+            border-right: 2px solid var(--gold);
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.4);
+            transition: background-color 0.3s ease;
+        }
+
+        .section-header {
+            position: sticky;
+            top: 0;
+            background: var(--gold);
+            color: white;
+            padding: 8px;
+            margin: 15px 0 5px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .letter-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: var(--panel-bg);
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid var(--panel-line);
+            transition: 0.2s ease;
+        }
+
+        .letter-item:hover {
+            transform: translateX(5px);
+            border-color: var(--gold);
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .letter-item.active {
+            border-color: var(--gold);
+            background: #fcf8f2;
+            box-shadow: inset 0 0 0 1px rgba(142, 115, 91, 0.18);
+        }
+
+        :root.dark .letter-item.active {
+            background: #2a3a4f;
+        }
+
+        .symbol {
+            font-size: 1.55rem;
+            width: 80px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--gold);
+            line-height: 1.1;
+        }
+
+        .info {
+            flex: 1;
+        }
+
+        .val-badge {
+            background: var(--ink);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .detail-view {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: var(--panel-bg);
+            gap: 24px;
+            transition: background-color 0.3s ease;
+        }
+
+        .focus-symbol {
+            font-size: clamp(4rem, 8vw, 8rem);
+            color: var(--gold);
+            margin: 0;
+            line-height: 1;
+        }
+
+        .focus-name {
+            font-size: 2.5rem;
+            margin: 10px 0;
+            border-bottom: 3px solid var(--gold);
+        }
+
+        .focus-meta {
+            font-size: 1.15rem;
+            max-width: 600px;
+            color: var(--muted-text);
+            line-height: 1.6;
+        }
+
+        .history-panel {
+            width: min(100%, 640px);
+            text-align: left;
+            background: var(--panel-soft);
+            border: 1px solid var(--panel-line);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .calendar-panel {
+            width: min(100%, 640px);
+            text-align: left;
+            background: var(--panel-bg);
+            border: 1px solid var(--gold);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .calendar-panel h3 {
+            margin: 0 0 10px;
+        }
+
+        .calendar-date {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 10px 0;
+            color: var(--gold);
+        }
+
+        .calendar-details {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--muted-text);
+        }
+
+        .calendar-gematria {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .history-panel h3 {
+            margin: 0 0 12px;
+        }
+
+        .history-tools {
+            margin: 15px 0;
+            padding: 10px;
+            background: var(--tool-surface);
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .history-tools strong {
+            margin-right: 8px;
+        }
+
+        .tool-button {
+            padding: 6px 12px;
+            font-size: 0.9em;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .tool-button.copy {
+            background: #3b82f6;
+        }
+
+        .tool-button.download {
+            background: #10b981;
+        }
+
+        .tool-button.danger {
+            background: #ef4444;
+            margin-left: auto;
+        }
+
+        .history-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .history-item,
+        .history-empty {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            background: var(--panel-bg);
+            border-radius: 8px;
+            padding: 10px 12px;
+            border: 1px solid var(--panel-line);
+        }
+
+        .history-empty {
+            color: #6e6255;
+            justify-content: center;
+        }
+
+        .history-item small {
+            color: #7a6e63;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="header-left">
+        <h1>Universal Lexicon</h1>
+        <p>Hebrew &bull; Aramaic &bull; Greek &bull; Latin &bull; Roman &bull; English</p>
+    </div>
+    <button id="themeToggle" class="theme-toggle" type="button">&#127769;</button>
+</header>
+
+<div class="tabs" role="tablist" aria-label="Dashboard tabs">
+    <button class="tab-btn active" type="button" data-tab="lexicon" onclick="openTab('lexicon')">Lexicon</button>
+    <button class="tab-btn" type="button" data-tab="calculator" onclick="openTab('calculator')">Calculator</button>
+    <button class="tab-btn" type="button" data-tab="calendar" onclick="openTab('calendar')">Calendar</button>
+</div>
+
+<div id="tab-lexicon" class="tab-content active">
+    <div class="main-container">
+        <div class="alphabet-list" id="list"></div>
+        <div class="detail-view" id="details">
+            <p>Select a character to begin your study.</p>
+        </div>
+    </div>
+</div>
+
+<div id="tab-calculator" class="tab-content">
+    <div class="calculator-zone">
+        <select id="scriptSelect" class="script-select" onchange="changeScript()"></select>
+        <input type="text" id="gematriaInput" placeholder="Type or paste letters" oninput="runCalculator()">
+        <div class="result-pill" id="totalResult">0</div>
+        <button class="save-button" type="button" onclick="saveToHistory()">Save Result</button>
+    </div>
+
+    <div class="breakdown-panel" id="breakdownPanel">
+        <h3 style="margin:0 0 10px;">Letter Breakdown</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Letter</th>
+                    <th>Name</th>
+                    <th style="text-align:center;">Value</th>
+                    <th style="text-align:right;">Running Total</th>
+                </tr>
+            </thead>
+            <tbody id="breakdownBody"></tbody>
+        </table>
+    </div>
+
+    <div class="connections-panel" id="connectionsPanel">
+        <h3>Biblical Connections</h3>
+        <div id="connectionsContent">
+            <p class="connections-empty">Calculate a value to see biblical and traditional gematria associations.</p>
+        </div>
+    </div>
+
+    <div class="history-panel" style="width:min(900px, calc(100% - 30px)); margin:16px auto 0;">
+        <h3>Calculation History</h3>
+        <div class="history-tools">
+            <strong>History Tools:</strong>
+            <button class="tool-button copy" type="button" onclick="copyHistoryJSON()">Copy JSON</button>
+            <button class="tool-button copy" type="button" onclick="copyHistoryCSV()">Copy CSV</button>
+            <button class="tool-button download" type="button" onclick="downloadHistoryJSON()">Download JSON</button>
+            <button class="tool-button download" type="button" onclick="downloadHistoryCSV()">Download CSV</button>
+            <button class="tool-button danger" type="button" onclick="clearHistory()">Clear All</button>
+        </div>
+        <div class="history-list" id="historyList"></div>
+    </div>
+</div>
+
+<div id="tab-calendar" class="tab-content">
+    <div class="calendar-panel" id="hebrewCalendar" style="width:min(900px, calc(100% - 30px)); margin:0 auto;">
+        <h3>Today's Hebrew Calendar</h3>
+        <div id="hebrewDateDisplay" class="calendar-date"></div>
+        <div id="hebrewDateDetails" class="calendar-details"></div>
+        <button class="save-button" type="button" onclick="calculateHebrewDateGematria()">Gematria of Today's Hebrew Date</button>
+        <div id="hebrewDateGematriaResult" class="calendar-gematria" style="display:none;"></div>
+    </div>
+</div>
+
+<script>
+    const scripts = {
+        hebrew: {
+            label: "Hebrew",
+            placeholder: "Type Hebrew letters (e.g., חי)",
+            entries: [
+                { symbol: "\u05D0", lookup: ["\u05D0"], name: "Aleph", val: 1, mean: "Ox, Strength, Leader. The primal beginning." },
+                { symbol: "\u05D1", lookup: ["\u05D1"], name: "Bet", val: 2, mean: "House, Dwelling, Within. The container." },
+                { symbol: "\u05D2", lookup: ["\u05D2"], name: "Gimel", val: 3, mean: "Camel, Bridge, Ripening. Movement." },
+                { symbol: "\u05D3", lookup: ["\u05D3"], name: "Dalet", val: 4, mean: "Door, Pathway, Humble. An opening." },
+                { symbol: "\u05D4", lookup: ["\u05D4"], name: "Hey", val: 5, mean: "Window, Behold, Breath. Spirit within form." },
+                { symbol: "\u05D5", lookup: ["\u05D5"], name: "Vav", val: 6, mean: "Nail, Hook, Connection. Binding Heaven and Earth." },
+                { symbol: "\u05D6", lookup: ["\u05D6"], name: "Zayin", val: 7, mean: "Weapon, Crown, Cut. Spiritual rest." },
+                { symbol: "\u05D7", lookup: ["\u05D7"], name: "Chet", val: 8, mean: "Fence, Inner Room, New Beginning." },
+                { symbol: "\u05D8", lookup: ["\u05D8"], name: "Tet", val: 9, mean: "Snake, Basket, Hidden Good." },
+                { symbol: "\u05D9", lookup: ["\u05D9"], name: "Yod", val: 10, mean: "Hand, Spark, Seed. The point of creation." },
+                { symbol: "\u05DB", lookup: ["\u05DB"], name: "Khaf", val: 20, mean: "Palm of Hand, To Cover. Potential." },
+                { symbol: "\u05DC", lookup: ["\u05DC"], name: "Lamed", val: 30, mean: "Goad, Staff, To Teach. The heart learning." },
+                { symbol: "\u05DE", lookup: ["\u05DE"], name: "Mem", val: 40, mean: "Water, Chaos, Mighty. Flow of wisdom." },
+                { symbol: "\u05E0", lookup: ["\u05E0"], name: "Nun", val: 50, mean: "Fish, Seed, Activity. Faithfulness." },
+                { symbol: "\u05E1", lookup: ["\u05E1"], name: "Samekh", val: 60, mean: "Prop, Support, Shield. Divine protection." },
+                { symbol: "\u05E2", lookup: ["\u05E2"], name: "Ayin", val: 70, mean: "Eye, To See, Experience. Divine providence." },
+                { symbol: "\u05E4", lookup: ["\u05E4"], name: "Pei", val: 80, mean: "Mouth, To Speak. Expression of the soul." },
+                { symbol: "\u05E6", lookup: ["\u05E6"], name: "Tzadi", val: 90, mean: "Fishhook, Righteousness. The desire for truth." },
+                { symbol: "\u05E7", lookup: ["\u05E7"], name: "Kof", val: 100, mean: "Back of Head, Holy. Cycles of time." },
+                { symbol: "\u05E8", lookup: ["\u05E8"], name: "Resh", val: 200, mean: "Head, Person. The mind and ego." },
+                { symbol: "\u05E9", lookup: ["\u05E9"], name: "Shin", val: 300, mean: "Teeth, Fire. Divine transformation." },
+                { symbol: "\u05EA", lookup: ["\u05EA"], name: "Tav", val: 400, mean: "Sign, Cross, Covenant. The mark of truth." }
+            ]
+        },
+        aramaic: {
+            label: "Aramaic",
+            placeholder: "Type Aramaic letters",
+            entries: [
+                { symbol: "\u0710", lookup: ["\u0710"], name: "Alaph", val: 1, mean: "Ox. The source of strength." },
+                { symbol: "\u0712", lookup: ["\u0712"], name: "Beth", val: 2, mean: "House. Foundation and shelter." },
+                { symbol: "\u0713", lookup: ["\u0713"], name: "Gamal", val: 3, mean: "Camel. Movement and carrying." },
+                { symbol: "\u0715", lookup: ["\u0715"], name: "Dalath", val: 4, mean: "Door. Entry and threshold." },
+                { symbol: "\u0717", lookup: ["\u0717"], name: "He", val: 5, mean: "Breath. Revelation and presence." },
+                { symbol: "\u0718", lookup: ["\u0718"], name: "Waw", val: 6, mean: "Hook. Connection and joining." },
+                { symbol: "\u0719", lookup: ["\u0719"], name: "Zain", val: 7, mean: "Weapon. Edge and completion." },
+                { symbol: "\u071A", lookup: ["\u071A"], name: "Heth", val: 8, mean: "Fence. Inner life and enclosure." },
+                { symbol: "\u071B", lookup: ["\u071B"], name: "Teth", val: 9, mean: "Basket. Hidden good and potential." },
+                { symbol: "\u071D", lookup: ["\u071D"], name: "Yudh", val: 10, mean: "Hand. Action and making." },
+                { symbol: "\u071F", lookup: ["\u071F"], name: "Kaph", val: 20, mean: "Palm. Capacity and covering." },
+                { symbol: "\u0720", lookup: ["\u0720"], name: "Lamadh", val: 30, mean: "Goad. Learning and direction." },
+                { symbol: "\u0721", lookup: ["\u0721"], name: "Mim", val: 40, mean: "Water. Wisdom in motion." },
+                { symbol: "\u0722", lookup: ["\u0722"], name: "Nun", val: 50, mean: "Fish. Life and continuation." },
+                { symbol: "\u0723", lookup: ["\u0723"], name: "Semkath", val: 60, mean: "Support. Protection and holding." },
+                { symbol: "\u0725", lookup: ["\u0725"], name: "E", val: 70, mean: "Eye. Seeing and awareness." },
+                { symbol: "\u0726", lookup: ["\u0726"], name: "Pe", val: 80, mean: "Mouth. Speech and utterance." },
+                { symbol: "\u0728", lookup: ["\u0728"], name: "Sadhe", val: 90, mean: "Hook. Right order and justice." },
+                { symbol: "\u0729", lookup: ["\u0729"], name: "Qoph", val: 100, mean: "Back of head. Horizon and cycles." },
+                { symbol: "\u072A", lookup: ["\u072A"], name: "Rish", val: 200, mean: "Head. Personhood and thought." },
+                { symbol: "\u072B", lookup: ["\u072B"], name: "Shin", val: 300, mean: "Tooth. Fire and transformation." },
+                { symbol: "\u072C", lookup: ["\u072C"], name: "Taw", val: 400, mean: "Sign. Completion and covenant." }
+            ]
+        },
+        greek: {
+            label: "Greek",
+            placeholder: "Type Greek letters (e.g., λόγος)",
+            entries: [
+                { symbol: "\u0391 \u03B1", lookup: ["\u0391", "\u03B1"], name: "Alpha", val: 1, mean: "The beginning and first principle." },
+                { symbol: "\u0392 \u03B2", lookup: ["\u0392", "\u03B2"], name: "Beta", val: 2, mean: "The second step, stability, and foundation." },
+                { symbol: "\u0393 \u03B3", lookup: ["\u0393", "\u03B3"], name: "Gamma", val: 3, mean: "Growth, angle, and unfolding movement." },
+                { symbol: "\u0394 \u03B4", lookup: ["\u0394", "\u03B4"], name: "Delta", val: 4, mean: "A doorway of change and transition." },
+                { symbol: "\u0395 \u03B5", lookup: ["\u0395", "\u03B5"], name: "Epsilon", val: 5, mean: "A small but essential extension of order." },
+                { symbol: "\u03DA \u03DB", lookup: ["\u03DA", "\u03DB", "\u03DC"], name: "Stigma", val: 6, mean: "The archaic six-value used in isopsephy." },
+                { symbol: "\u0396 \u03B6", lookup: ["\u0396", "\u03B6"], name: "Zeta", val: 7, mean: "A figure of energy, force, and completion." },
+                { symbol: "\u0397 \u03B7", lookup: ["\u0397", "\u03B7"], name: "Eta", val: 8, mean: "A broader field of life, duration, and resonance." },
+                { symbol: "\u0398 \u03B8", lookup: ["\u0398", "\u03B8"], name: "Theta", val: 9, mean: "A marked circle suggesting fullness and mystery." },
+                { symbol: "\u0399 \u03B9", lookup: ["\u0399", "\u03B9"], name: "Iota", val: 10, mean: "The smallest stroke carrying precision and intent." },
+                { symbol: "\u039A \u03BA", lookup: ["\u039A", "\u03BA"], name: "Kappa", val: 20, mean: "Projection, structure, and directed force." },
+                { symbol: "\u039B \u03BB", lookup: ["\u039B", "\u03BB"], name: "Lambda", val: 30, mean: "Ascent, learning, and sharpened direction." },
+                { symbol: "\u039C \u03BC", lookup: ["\u039C", "\u03BC"], name: "Mu", val: 40, mean: "Measure, depth, and the flowing middle." },
+                { symbol: "\u039D \u03BD", lookup: ["\u039D", "\u03BD"], name: "Nu", val: 50, mean: "Continuation, sequence, and living motion." },
+                { symbol: "\u039E \u03BE", lookup: ["\u039E", "\u03BE"], name: "Xi", val: 60, mean: "Layered structure and ordered complexity." },
+                { symbol: "\u039F \u03BF", lookup: ["\u039F", "\u03BF"], name: "Omicron", val: 70, mean: "The small circle of completeness and enclosure." },
+                { symbol: "\u03A0 \u03C0", lookup: ["\u03A0", "\u03C0"], name: "Pi", val: 80, mean: "A gateway-like form tied to design and proportion." },
+                { symbol: "\u03DE \u03DF", lookup: ["\u03DE", "\u03DF"], name: "Koppa", val: 90, mean: "An archaic numeric sign completing the tens." },
+                { symbol: "\u03A1 \u03C1", lookup: ["\u03A1", "\u03C1"], name: "Rho", val: 100, mean: "Headstream, flow, and a turn into the hundreds." },
+                { symbol: "\u03A3 \u03C3 \u03C2", lookup: ["\u03A3", "\u03C3", "\u03C2"], name: "Sigma", val: 200, mean: "Gathering, summation, and totality." },
+                { symbol: "\u03A4 \u03C4", lookup: ["\u03A4", "\u03C4"], name: "Tau", val: 300, mean: "A signpost of order, form, and completion." },
+                { symbol: "\u03A5 \u03C5", lookup: ["\u03A5", "\u03C5"], name: "Upsilon", val: 400, mean: "Branching, choice, and elevation." },
+                { symbol: "\u03A6 \u03C6", lookup: ["\u03A6", "\u03C6"], name: "Phi", val: 500, mean: "Radiance, proportion, and centered life." },
+                { symbol: "\u03A7 \u03C7", lookup: ["\u03A7", "\u03C7"], name: "Chi", val: 600, mean: "Crossing currents, marking, and intersection." },
+                { symbol: "\u03A8 \u03C8", lookup: ["\u03A8", "\u03C8"], name: "Psi", val: 700, mean: "A trident form linked with breadth and extension." },
+                { symbol: "\u03A9 \u03C9", lookup: ["\u03A9", "\u03C9"], name: "Omega", val: 800, mean: "The great ending, completion, and horizon." },
+                { symbol: "\u03E0 \u03E1", lookup: ["\u03E0", "\u03E1"], name: "Sampi", val: 900, mean: "The archaic final sign completing the isopsephy sequence." }
+            ]
+        },
+        latin: {
+            label: "Latin",
+            placeholder: "Type Latin letters (e.g., AVE)",
+            entries: [
+                { symbol: "A a", lookup: ["A", "a"], name: "A", val: 1, mean: "The opening Latin letter in the simple A-Z sequence." },
+                { symbol: "B b", lookup: ["B", "b"], name: "B", val: 2, mean: "The second Latin letter in the simple A-Z sequence." },
+                { symbol: "C c", lookup: ["C", "c"], name: "C", val: 3, mean: "The third Latin letter in the simple A-Z sequence." },
+                { symbol: "D d", lookup: ["D", "d"], name: "D", val: 4, mean: "The fourth Latin letter in the simple A-Z sequence." },
+                { symbol: "E e", lookup: ["E", "e"], name: "E", val: 5, mean: "The fifth Latin letter in the simple A-Z sequence." },
+                { symbol: "F f", lookup: ["F", "f"], name: "F", val: 6, mean: "The sixth Latin letter in the simple A-Z sequence." },
+                { symbol: "G g", lookup: ["G", "g"], name: "G", val: 7, mean: "The seventh Latin letter in the simple A-Z sequence." },
+                { symbol: "H h", lookup: ["H", "h"], name: "H", val: 8, mean: "The eighth Latin letter in the simple A-Z sequence." },
+                { symbol: "I i", lookup: ["I", "i"], name: "I", val: 9, mean: "The ninth Latin letter in the simple A-Z sequence." },
+                { symbol: "J j", lookup: ["J", "j"], name: "J", val: 10, mean: "The tenth Latin letter in the simple A-Z sequence." },
+                { symbol: "K k", lookup: ["K", "k"], name: "K", val: 11, mean: "The eleventh Latin letter in the simple A-Z sequence." },
+                { symbol: "L l", lookup: ["L", "l"], name: "L", val: 12, mean: "The twelfth Latin letter in the simple A-Z sequence." },
+                { symbol: "M m", lookup: ["M", "m"], name: "M", val: 13, mean: "The thirteenth Latin letter in the simple A-Z sequence." },
+                { symbol: "N n", lookup: ["N", "n"], name: "N", val: 14, mean: "The fourteenth Latin letter in the simple A-Z sequence." },
+                { symbol: "O o", lookup: ["O", "o"], name: "O", val: 15, mean: "The fifteenth Latin letter in the simple A-Z sequence." },
+                { symbol: "P p", lookup: ["P", "p"], name: "P", val: 16, mean: "The sixteenth Latin letter in the simple A-Z sequence." },
+                { symbol: "Q q", lookup: ["Q", "q"], name: "Q", val: 17, mean: "The seventeenth Latin letter in the simple A-Z sequence." },
+                { symbol: "R r", lookup: ["R", "r"], name: "R", val: 18, mean: "The eighteenth Latin letter in the simple A-Z sequence." },
+                { symbol: "S s", lookup: ["S", "s"], name: "S", val: 19, mean: "The nineteenth Latin letter in the simple A-Z sequence." },
+                { symbol: "T t", lookup: ["T", "t"], name: "T", val: 20, mean: "The twentieth Latin letter in the simple A-Z sequence." },
+                { symbol: "U u", lookup: ["U", "u"], name: "U", val: 21, mean: "The twenty-first Latin letter in the simple A-Z sequence." },
+                { symbol: "V v", lookup: ["V", "v"], name: "V", val: 22, mean: "The twenty-second Latin letter in the simple A-Z sequence." },
+                { symbol: "W w", lookup: ["W", "w"], name: "W", val: 23, mean: "The twenty-third Latin letter in the simple A-Z sequence." },
+                { symbol: "X x", lookup: ["X", "x"], name: "X", val: 24, mean: "The twenty-fourth Latin letter in the simple A-Z sequence." },
+                { symbol: "Y y", lookup: ["Y", "y"], name: "Y", val: 25, mean: "The twenty-fifth Latin letter in the simple A-Z sequence." },
+                { symbol: "Z z", lookup: ["Z", "z"], name: "Z", val: 26, mean: "The twenty-sixth Latin letter in the simple A-Z sequence." }
+            ]
+        },
+        roman: {
+            label: "Roman Numerals",
+            placeholder: "Type Roman numerals (e.g., MCMXIV)",
+            entries: [
+                { symbol: "I i", lookup: ["I", "i"], name: "I", val: 1, mean: "The Roman numeral for one." },
+                { symbol: "V v", lookup: ["V", "v"], name: "V", val: 5, mean: "The Roman numeral for five." },
+                { symbol: "X x", lookup: ["X", "x"], name: "X", val: 10, mean: "The Roman numeral for ten." },
+                { symbol: "L l", lookup: ["L", "l"], name: "L", val: 50, mean: "The Roman numeral for fifty." },
+                { symbol: "C c", lookup: ["C", "c"], name: "C", val: 100, mean: "The Roman numeral for one hundred." },
+                { symbol: "D d", lookup: ["D", "d"], name: "D", val: 500, mean: "The Roman numeral for five hundred." },
+                { symbol: "M m", lookup: ["M", "m"], name: "M", val: 1000, mean: "The Roman numeral for one thousand." }
+            ]
+        },
+        english: {
+            label: "English",
+            placeholder: "Type English letters (e.g., hello)",
+            entries: [
+                ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((char, index) => ({
+                    symbol: `${char} ${char.toLowerCase()}`,
+                    lookup: [char, char.toLowerCase()],
+                    name: char,
+                    val: index + 1,
+                    mean: `English letter ${index + 1}`
+                }))
+            ]
+        }
+    };
+
+    const scriptSelect = document.getElementById("scriptSelect");
+    const gematriaInput = document.getElementById("gematriaInput");
+    const totalResult = document.getElementById("totalResult");
+    const listEl = document.getElementById("list");
+    const detailEl = document.getElementById("details");
+    const connectionsContent = document.getElementById("connectionsContent");
+    const breakdownPanel = document.getElementById("breakdownPanel");
+    const breakdownBody = document.getElementById("breakdownBody");
+    const hebrewDateDisplay = document.getElementById("hebrewDateDisplay");
+    const hebrewDateDetails = document.getElementById("hebrewDateDetails");
+    const hebrewDateGematriaResult = document.getElementById("hebrewDateGematriaResult");
+
+    let currentScriptKey = "hebrew";
+    let activeItem = null;
+
+    function openTab(tabKey) {
+        const targetId = `tab-${tabKey}`;
+
+        document.querySelectorAll(".tab-content").forEach((panel) => {
+            panel.classList.toggle("active", panel.id === targetId);
+        });
+
+        document.querySelectorAll(".tab-btn").forEach((btn) => {
+            const isActive = btn.dataset.tab === tabKey;
+            btn.classList.toggle("active", isActive);
+            btn.setAttribute("aria-selected", isActive ? "true" : "false");
+        });
+
+        if (tabKey === "calculator") {
+            window.setTimeout(() => gematriaInput.focus(), 0);
+        }
+
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, "", `#${tabKey}`);
+        }
+    }
+
+    const biblicalConnections = {
+        1: ["אחד (Echad) — 'One' (Deuteronomy 6:4 – 'The Lord is One')"],
+        7: [
+            "Divine perfection and completion (7 days of creation, 7 feasts, etc.)",
+            "Appears frequently throughout Scripture as a symbol of wholeness"
+        ],
+        13: ["אחד (Echad) — 'One' (unity of God, often emphasized in Jewish tradition)"],
+        14: ["דוד (David) — King David (value of his name in Hebrew)"],
+        17: ["Often symbolizes 'victory' or 'overcoming the enemy' in biblical numerology"],
+        18: [
+            "חי (Chai) — 'Life' (very common Jewish symbol of blessing and vitality)",
+            "Frequently associated with gifts, charity, and living fully"
+        ],
+        19: ["חוה (Chavah / Eve) — 'Life-giver' (traditional name of the first woman)"],
+        26: [
+            "יהוה (YHWH / Yahweh) — The sacred Divine Name of God",
+            "Core personal name of the God of Israel"
+        ],
+        40: ["Period of testing or transition (40 days of flood, 40 years in wilderness, 40 days of Jesus' temptation, etc.)"],
+        45: ["אדם (Adam) — First man / humanity"],
+        70: ["Often represents nations of the world or completeness in judgment"],
+        86: [
+            "אלהים (Elohim) — God (plural form, used especially in creation accounts)",
+            "Sometimes linked to 'Nature' (hateva) in mystical traditions"
+        ],
+        153: [
+            "153 fish caught in John 21:11 (miraculous catch after resurrection)",
+            "Linked to 'Ani Elohim' (I AM God) and 'sons of God' in some interpretations",
+            "Triangular number (sum of 1 to 17); 17 often means victory"
+        ],
+        318: ["Number of trained men with Abram (Genesis 14); sometimes linked to Eliezer"],
+        358: [
+            "משיח (Moshiach) — 'The Messiah' / 'Anointed One'",
+            "Also sometimes linked to 'nachash' (serpent) in contrast to Messiah in certain interpretations"
+        ],
+        376: [
+            "שלום (Shalom) — Peace, wholeness, completeness",
+            "One of the richest and most comprehensive words in Hebrew"
+        ],
+        541: ["ישראל (Yisrael / Israel) — 'Prince with God' or 'Struggles with God'"],
+        611: [
+            "תורה (Torah) — The Law / Instruction",
+            "Also equals the number of times 'holy' appears in some Bible counts"
+        ],
+        613: [
+            "Traditional number of commandments (mitzvot) in the Torah",
+            "248 positive + 365 negative commandments"
+        ],
+        666: [
+            "Number of the Beast (Revelation 13:18)",
+            "Often calculated as gematria for 'Nero Caesar' (NRON QSR) in Hebrew",
+            "Symbol of human opposition to God or ultimate imperfection"
+        ],
+        777: [
+            "Genesis 1:1 connection: 'God' + 'the heavens' + 'the earth' in some methods",
+            "Often seen as a number of divine perfection or spiritual completeness"
+        ],
+        888: [
+            "Ἰησοῦς (Iesous / Jesus) in Greek Isopsephy",
+            "Strong symbolic link to Jesus in the New Testament"
+        ]
+    };
+
+    function getCurrentScript() {
+        return scripts[currentScriptKey];
+    }
+
+    let historyCache = [];
+
+    function safeGetItem(key) {
+        try {
+            return localStorage.getItem(key);
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function safeSetItem(key, value) {
+        try {
+            localStorage.setItem(key, value);
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function safeRemoveItem(key) {
+        try {
+            localStorage.removeItem(key);
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function getHistory() {
+        try {
+            const stored = localStorage.getItem("gematriaHistory");
+            return stored ? JSON.parse(stored) : [];
+        } catch (error) {
+            return historyCache;
+        }
+    }
+
+    function safeSaveHistory(history) {
+        historyCache = [...history];
+        safeSetItem("gematriaHistory", JSON.stringify(history));
+    }
+
+    function safeClearHistory() {
+        historyCache = [];
+        safeRemoveItem("gematriaHistory");
+    }
+
+    function renderScriptOptions() {
+        Object.entries(scripts).forEach(([key, script]) => {
+            const option = document.createElement("option");
+            option.value = key;
+            option.textContent = script.label;
+            scriptSelect.appendChild(option);
+        });
+        scriptSelect.value = currentScriptKey;
+    }
+
+    function renderHistory(history) {
+        const target = document.getElementById("historyList");
+        if (!target) return;
+
+        if (!history.length) {
+            target.innerHTML = `<div class="history-empty">No saved calculations yet.</div>`;
+            return;
+        }
+
+        target.innerHTML = history
+            .map(
+                (item) => `<div class="history-item"><span>[${item.script}] ${item.input} <small>(${item.time})</small></span><strong>${item.value}</strong></div>`
+            )
+            .join("");
+    }
+
+    function showDetail(item, element) {
+        if (activeItem) {
+            activeItem.classList.remove("active");
+        }
+
+        if (element) {
+            activeItem = element;
+            activeItem.classList.add("active");
+        }
+
+        detailEl.innerHTML = `
+            <h1 class="focus-symbol">${item.symbol}</h1>
+            <h2 class="focus-name">${item.name}</h2>
+            <div class="focus-meta">
+                <p><strong>Numerical Value:</strong> ${item.val}</p>
+                <p><strong>System:</strong> ${getCurrentScript().label}</p>
+                <p><strong>Glyphs:</strong> ${item.symbol}</p>
+                <p><strong>Ancient Meaning:</strong> ${item.mean}</p>
+            </div>
+        `;
+    }
+
+    function renderLetterList() {
+        const script = getCurrentScript();
+        listEl.innerHTML = "";
+        activeItem = null;
+
+        const header = document.createElement("div");
+        header.className = "section-header";
+        header.textContent = script.label;
+        listEl.appendChild(header);
+
+        script.entries.forEach((item, index) => {
+            const row = document.createElement("div");
+            row.className = "letter-item";
+            row.innerHTML = `<div class="symbol">${item.symbol}</div><div class="info"><strong>${item.name}</strong><br><span class="val-badge">Val: ${item.val}</span></div>`;
+            row.onclick = () => showDetail(item, row);
+            listEl.appendChild(row);
+
+            if (index === 0) {
+                showDetail(item, row);
+            }
+        });
+    }
+
+    function findEntryByChar(char) {
+        return getCurrentScript().entries.find((entry) => entry.lookup.includes(char));
+    }
+
+    function showBiblicalConnections(total) {
+        const matches = biblicalConnections[total];
+
+        if (!matches || total === 0) {
+            connectionsContent.innerHTML = `<p class="connections-empty">No built-in connections for this value yet.</p>`;
+            return;
+        }
+
+        connectionsContent.innerHTML = `
+            <p><strong>Total:</strong> ${total}</p>
+            <ul class="connections-list">
+                ${matches.map((item) => `<li>${item}</li>`).join("")}
+            </ul>
+        `;
+    }
+
+    function updateHebrewCalendar() {
+        try {
+            const today = new Date();
+            const fullFormatter = new Intl.DateTimeFormat("en-u-ca-hebrew", {
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+            });
+            const monthFormatter = new Intl.DateTimeFormat("en-u-ca-hebrew", { month: "long" });
+            const dayFormatter = new Intl.DateTimeFormat("en-u-ca-hebrew", { day: "numeric" });
+            const yearFormatter = new Intl.DateTimeFormat("en-u-ca-hebrew", { year: "numeric" });
+
+            const hebrewDateStr = fullFormatter.format(today);
+            const hebrewDay = dayFormatter.format(today);
+            const hebrewMonth = monthFormatter.format(today);
+            const hebrewYear = yearFormatter.format(today);
+
+            hebrewDateDisplay.textContent = `${hebrewDay} ${hebrewMonth} ${hebrewYear}`;
+            hebrewDateDetails.innerHTML = `
+                <strong>Hebrew Date:</strong> ${hebrewDateStr}<br>
+                <small>This date can connect to holidays, parashat readings, and gematria themes.</small>
+            `;
+        } catch (error) {
+            hebrewDateDisplay.textContent = "Hebrew calendar unavailable in this browser";
+            hebrewDateDetails.textContent = "";
+        }
+    }
+
+    function calculateHebrewDateGematria() {
+        hebrewDateGematriaResult.style.display = "block";
+
+        try {
+            const today = new Date();
+            const hebrewStr = new Intl.DateTimeFormat("he-u-ca-hebrew", {
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+            }).format(today);
+
+            const hebrewLetters = hebrewStr.match(/[\u0590-\u05FF]/g) || [];
+            const hebrewValues = {
+                "א": 1, "ב": 2, "ג": 3, "ד": 4, "ה": 5, "ו": 6, "ז": 7, "ח": 8, "ט": 9,
+                "י": 10, "כ": 20, "ל": 30, "מ": 40, "נ": 50, "ס": 60, "ע": 70, "פ": 80, "צ": 90,
+                "ק": 100, "ר": 200, "ש": 300, "ת": 400,
+                "ך": 20, "ם": 40, "ן": 50, "ף": 80, "ץ": 90
+            };
+
+            let total = 0;
+            hebrewLetters.forEach((char) => {
+                total += hebrewValues[char] || 0;
+            });
+
+            hebrewDateGematriaResult.innerHTML = `
+                Gematria of today's Hebrew date letters: <strong>${total}</strong><br>
+                <small>(${hebrewStr})</small>
+            `;
+
+            showBiblicalConnections(total);
+        } catch (error) {
+            hebrewDateGematriaResult.textContent = "Could not calculate gematria for Hebrew date.";
+        }
+    }
+
+    function runCalculator() {
+        const input = gematriaInput.value;
+        let total = 0;
+        let running = 0;
+        let rows = "";
+
+        for (const char of input) {
+            const entry = findEntryByChar(char);
+            if (entry) {
+                total += entry.val;
+                running += entry.val;
+                rows += `
+                    <tr>
+                        <td>${char}</td>
+                        <td>${entry.name}</td>
+                        <td style="text-align:center;">${entry.val}</td>
+                        <td style="text-align:right;">${running}</td>
+                    </tr>
+                `;
+            }
+        }
+
+        totalResult.innerText = total;
+        showBiblicalConnections(total);
+
+        if (rows) {
+            breakdownBody.innerHTML = rows;
+            breakdownPanel.style.display = "block";
+        } else {
+            breakdownBody.innerHTML = "";
+            breakdownPanel.style.display = "none";
+        }
+    }
+
+    function saveToHistory() {
+        const input = gematriaInput.value;
+        const value = totalResult.innerText;
+        if (!input || value === "0") return;
+
+        const history = getHistory();
+        history.unshift({
+            script: getCurrentScript().label,
+            input,
+            value,
+            display: `${getCurrentScript().label}: ${input} = ${value}`,
+            time: new Date().toLocaleTimeString(),
+            timestamp: new Date().toISOString()
+        });
+        if (history.length > 10) history.pop();
+        safeSaveHistory(history);
+
+        renderHistory(history);
+    }
+
+    function historyToCSV(history) {
+        return [
+            ["Timestamp", "Script", "Input", "Value", "Display"],
+            ...history.map((entry) => [
+                entry.timestamp ? new Date(entry.timestamp).toLocaleString() : "",
+                entry.script || "Unknown",
+                entry.input || "",
+                entry.value || "",
+                entry.display || ""
+            ])
+        ]
+            .map((row) => row.map((field) => `"${String(field).replace(/"/g, '""')}"`).join(","))
+            .join("\n");
+    }
+
+    function copyText(text, successMessage) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert(successMessage);
+        });
+    }
+
+    function copyHistoryJSON() {
+        const history = getHistory();
+        if (history.length === 0) {
+            alert("No history to export");
+            return;
+        }
+
+        copyText(JSON.stringify(history, null, 2), "History copied as JSON to clipboard.");
+    }
+
+    function copyHistoryCSV() {
+        const history = getHistory();
+        if (history.length === 0) {
+            alert("No history to export");
+            return;
+        }
+
+        copyText(historyToCSV(history), "History copied as CSV to clipboard.");
+    }
+
+    function downloadBlob(content, type, extension) {
+        const blob = new Blob([content], { type });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `gematria-history-${new Date().toISOString().slice(0, 10)}.${extension}`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function downloadHistoryJSON() {
+        const history = getHistory();
+        if (history.length === 0) {
+            alert("No history to export");
+            return;
+        }
+
+        downloadBlob(JSON.stringify(history, null, 2), "application/json", "json");
+    }
+
+    function downloadHistoryCSV() {
+        const history = getHistory();
+        if (history.length === 0) {
+            alert("No history to export");
+            return;
+        }
+
+        downloadBlob(historyToCSV(history), "text/csv", "csv");
+    }
+
+    function clearHistory() {
+        if (!confirm("Clear all saved calculations? This cannot be undone.")) {
+            return;
+        }
+
+        safeClearHistory();
+        renderHistory([]);
+        alert("History cleared.");
+    }
+
+    function changeScript() {
+        currentScriptKey = scriptSelect.value;
+        gematriaInput.value = "";
+        gematriaInput.placeholder = getCurrentScript().placeholder;
+        totalResult.innerText = "0";
+        renderLetterList();
+        showBiblicalConnections(0);
+        breakdownBody.innerHTML = "";
+        breakdownPanel.style.display = "none";
+    }
+
+    const themeToggle = document.getElementById("themeToggle");
+    const rootElement = document.documentElement;
+
+    function setTheme(isDark) {
+        if (isDark) {
+            rootElement.classList.add("dark");
+            themeToggle.innerHTML = "&#9728;&#65039;";
+            safeSetItem("theme", "dark");
+        } else {
+            rootElement.classList.remove("dark");
+            themeToggle.innerHTML = "&#127769;";
+            safeSetItem("theme", "light");
+        }
+    }
+
+    function initTheme() {
+        const savedTheme = safeGetItem("theme");
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+        if (savedTheme === "dark" || (!savedTheme && prefersDark)) {
+            setTheme(true);
+        } else {
+            setTheme(false);
+        }
+    }
+
+    renderScriptOptions();
+    changeScript();
+    initTheme();
+
+    themeToggle.addEventListener("click", () => {
+        const isDark = !rootElement.classList.contains("dark");
+        setTheme(isDark);
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+        const hashTab = (window.location.hash || "#lexicon").slice(1);
+        openTab(["lexicon", "calculator", "calendar"].includes(hashTab) ? hashTab : "lexicon");
+        renderHistory(getHistory());
+        updateHebrewCalendar();
+    });
+</script>
+
+</body>
+</html>
